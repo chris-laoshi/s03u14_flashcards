@@ -1,82 +1,160 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Flashcards</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
 
 <style>
-  * { box-sizing: border-box; }
+  * { box-sizing:border-box; }
 
-  body {
-    margin: 0;
-    background: #000;
-    color: #fff;
-    font-family: 'Patrick Hand', cursive;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  body{
+    margin:0;
+    background:#000;
+    color:#fff;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   }
 
-  .card {
+  .wrap{
+    min-height:100vh;
+    padding: 8px 14px 16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+
+  /* CARD */
+  .cardStage{
     width: min(92vw, 420px);
     aspect-ratio: 1 / 1;
-    background: #000;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 8px;
-    cursor: pointer;
+    background:#0c0c0c;
+    border-radius:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    perspective:1200px;
+    box-shadow: 0 16px 36px rgba(0,0,0,.35);
   }
 
-  .card img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+  .card3d{
+    width:100%;
+    height:100%;
+    position:relative;
+    transform-style:preserve-3d;
+    transition: transform .25s ease;
   }
 
-  .text {
-    font-size: 3.2rem;
-    text-align: center;
-    line-height: 1.2;
-    padding: 20px;
+  .cardStage.flipped .card3d{
+    transform: rotateY(180deg);
   }
 
-  .controls {
-    display: flex;
-    gap: 14px;
-    margin: 14px 0 6px;
+  .face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:14px;
   }
 
-  button {
-    font-size: 1.8rem;
-    padding: 10px 18px;
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
+  /* FIXED IMAGE BOX */
+  .imageBox{
+    width: 78%;
+    height: 78%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
 
-  .shuffle {
-    margin-bottom: 14px;
-    font-size: 1.3rem;
+  .imageBox img{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+  }
+
+  .back{
+    transform: rotateY(180deg);
+  }
+
+  .phrase{
+    font-family:"Patrick Hand", cursive;
+    font-size: clamp(36px, 7.5vw, 64px);
+    line-height:1.05;
+    text-align:center;
+  }
+
+  /* CONTROLS */
+  .controls{
+    width: min(92vw, 420px);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .row{
+    display:flex;
+    gap:12px;
+  }
+
+  .btn{
+    flex:1;
+    min-height:56px;
+    font-size:22px;
+    font-weight:700;
+    border-radius:14px;
+    border:none;
+    background:#f1f1f1;
+    color:#111;
+    cursor:pointer;
+    box-shadow: 0 10px 22px rgba(0,0,0,.25);
+  }
+
+  .btn:active{
+    transform: translateY(1px);
+  }
+
+  .shuffleBtn{
+    width:100%;
+    max-width:260px;
+    margin:0 auto;
+    min-height:50px;
+    font-size:20px;
   }
 </style>
 </head>
 
 <body>
+<div class="wrap">
 
-<div class="card" id="card"></div>
+  <div id="cardStage" class="cardStage">
+    <div class="card3d">
+      <div class="face front">
+        <div class="imageBox">
+          <img id="cardImg" alt="">
+        </div>
+      </div>
+      <div class="face back">
+        <div id="cardText" class="phrase"></div>
+      </div>
+    </div>
+  </div>
 
-<div class="controls">
-  <button id="prev">«</button>
-  <button id="play">▶</button>
-  <button id="next">»</button>
+  <div class="controls">
+    <div class="row">
+      <button class="btn" id="prev">«</button>
+      <button class="btn" id="play">▶</button>
+      <button class="btn" id="next">»</button>
+    </div>
+    <button class="btn shuffleBtn" id="shuffle">🔀 Shuffle</button>
+  </div>
+
 </div>
-
-<button class="shuffle" id="shuffle">🔀 Shuffle</button>
 
 <script>
 const cards = [
@@ -93,7 +171,7 @@ const cards = [
   {
     image: "https://i.postimg.cc/qvLbpCJZ/jumper-sweater.webp",
     audio: "https://res.cloudinary.com/dugvo3tsb/video/upload/v1769846035/jumper_sweater_vsup8q.wav",
-    text: ["jumper", "sweater"]
+    text: ["jumper","sweater"]
   },
   {
     image: "https://i.postimg.cc/0yfW9Jkh/shirt.webp",
@@ -118,69 +196,55 @@ const cards = [
   {
     image: "https://i.postimg.cc/R0ZPhVhD/trousers-pants.webp",
     audio: "https://res.cloudinary.com/dugvo3tsb/video/upload/v1769846035/trousers_pants_g37guw.wav",
-    text: ["trousers", "pants"]
+    text: ["trousers","pants"]
   }
 ];
 
-let index = 0;
-let flipped = false;
+let order = cards.map((_,i)=>i);
+let idx = 0;
 const audio = new Audio();
 
-const card = document.getElementById("card");
-const playBtn = document.getElementById("play");
+const stage = document.getElementById("cardStage");
+const img = document.getElementById("cardImg");
+const txt = document.getElementById("cardText");
 
-function showImage() {
-  flipped = false;
+function render(){
+  const c = cards[order[idx]];
+  stage.classList.remove("flipped");
+  img.src = c.image;
+  txt.innerHTML = c.text.join("<br>");
+  audio.src = c.audio;
   audio.pause();
-  card.innerHTML = `<img src="${cards[index].image}">`;
-}
-
-function showText() {
-  flipped = true;
-  const lines = cards[index].text.join("<br>");
-  card.innerHTML = `<div class="text">${lines}</div>`;
-}
-
-function playAudio() {
-  audio.src = cards[index].audio;
   audio.currentTime = 0;
-  audio.play();
 }
 
-card.onclick = () => {
-  if (!flipped) {
-    showText();
-    playAudio();
-  } else {
-    showImage();
+function flipAndPlay(){
+  audio.currentTime = 0;
+  if(!stage.classList.contains("flipped")){
+    stage.classList.add("flipped");
+    setTimeout(()=>audio.play(),60);
+  }else{
+    audio.play();
   }
-};
+}
 
-playBtn.onclick = () => {
-  if (!flipped) {
-    showText();
+document.getElementById("play").onclick = flipAndPlay;
+document.getElementById("prev").onclick = ()=>{ idx=(idx-1+order.length)%order.length; render(); };
+document.getElementById("next").onclick = ()=>{ idx=(idx+1)%order.length; render(); };
+document.getElementById("shuffle").onclick = ()=>{
+  for(let i=order.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [order[i],order[j]]=[order[j],order[i]];
   }
-  playAudio();
+  idx=0; render();
 };
 
-document.getElementById("prev").onclick = () => {
-  index = (index - 1 + cards.length) % cards.length;
-  showImage();
+stage.onclick = ()=>{
+  if(!stage.classList.contains("flipped")) flipAndPlay();
+  else { stage.classList.remove("flipped"); audio.pause(); }
 };
 
-document.getElementById("next").onclick = () => {
-  index = (index + 1) % cards.length;
-  showImage();
-};
-
-document.getElementById("shuffle").onclick = () => {
-  cards.sort(() => Math.random() - 0.5);
-  index = 0;
-  showImage();
-};
-
-showImage();
+render();
 </script>
-
 </body>
 </html>
